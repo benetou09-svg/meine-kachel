@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ironman Plan">
+<meta name="theme-color" content="#0f172a">
+<title>Ironman Trainingsplan</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --ink:#0f172a; --muted:#64748b; --muted2:#94a3b8;
+    --line:#e2e8f0; --accent:#0ea5e9; --dark:#0f172a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,ui-sans-serif,system-ui,sans-serif;
+    -webkit-text-size-adjust:100%}
+  #app{max-width:640px;margin:0 auto;min-height:100vh}
+  header.hero{background:var(--dark);color:#fff;padding:calc(env(safe-area-inset-top) + 22px) 16px 18px}
+  .eyebrow{display:flex;align-items:center;gap:6px;color:#38bdf8;font-size:12px;font-weight:600;letter-spacing:.02em}
+  .hero h1{font-size:22px;font-weight:800;margin:6px 0 2px;line-height:1.15}
+  .hero .sub{color:#cbd5e1;font-size:13px}
+  .hero .count{font-size:34px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .hero .count-l{color:#94a3b8;font-size:12px}
+  .row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:8px}
+  .bar{height:8px;border-radius:99px;background:#334155;overflow:hidden;margin-top:6px}
+  .bar>i{display:block;height:100%;background:#38bdf8}
+  .bar-meta{display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-top:12px}
+  nav{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);display:flex}
+  nav button{flex:1;border:0;background:none;padding:10px 2px;font-size:12px;font-weight:600;color:var(--muted2);
+    display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border-bottom:2px solid transparent}
+  nav button .ic{font-size:18px;line-height:1}
+  nav button.active{color:var(--ink);border-bottom-color:var(--ink)}
+  main{padding:18px 16px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .muted{color:var(--muted)} .small{font-size:12px} .xs{font-size:11px}
+  h2.sec{font-size:13px;font-weight:800;color:var(--muted);margin:0 0 8px;display:flex;align-items:center;gap:6px}
+  label.field{display:block;margin-bottom:12px}
+  label.field>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;
+    color:var(--ink);font-size:15px;outline:none;font-family:inherit}
+  input:focus,select,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  button.btn{width:100%;padding:12px;border:0;border-radius:12px;background:var(--dark);color:#fff;font-weight:700;
+    font-size:15px;cursor:pointer}
+  button.btn.accent{background:var(--accent)}
+  button.btn.ghost{background:#fff;border:1px solid #cbd5e1;color:var(--ink)}
+  button.btn:disabled{opacity:.4}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;padding:9px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--muted);
+    font-size:13px;font-weight:600;cursor:pointer}
+  .seg button.on{color:#fff}
+  .daycol{display:flex;gap:12px;margin-bottom:12px}
+  .daylab{width:34px;flex:0 0 auto;text-align:center;font-size:12px;font-weight:800;color:var(--muted2);padding-top:12px}
+  .sess{border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px}
+  .sess.done{background:#f8fafc}
+  .sess .top{display:flex;gap:10px;padding:12px;align-items:flex-start}
+  .disc{width:36px;height:36px;flex:0 0 auto;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .sess h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .sess .dur{font-size:12px;color:var(--muted2);font-weight:600}
+  .sess .desc{font-size:12px;color:var(--muted);margin-top:3px;white-space:pre-line;line-height:1.5}
+  .sess.done h4,.sess.done .desc{text-decoration:line-through;color:var(--muted2)}
+  .tgt{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;margin-top:8px}
+  .logline{margin-top:8px;font-size:12px;background:#ecfdf5;color:#047857;border-radius:8px;padding:6px 8px}
+  .chk{width:26px;height:26px;flex:0 0 auto;border-radius:99px;border:2px solid #cbd5e1;display:flex;align-items:center;
+    justify-content:center;color:#fff;cursor:pointer;font-size:15px;font-weight:800}
+  .chk.on{background:#10b981;border-color:#10b981}
+  .linkish{background:none;border:0;color:var(--muted2);font-size:12px;cursor:pointer;padding:0;display:inline-flex;gap:4px;align-items:center}
+  .acc{margin-bottom:6px}
+  .acc .body{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12px;color:var(--muted);line-height:1.6}
+  .acc .body b{color:var(--ink)}
+  .note{font-size:12px;border-radius:10px;padding:8px 12px;line-height:1.5;margin-bottom:14px}
+  .note.amber{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .note.green{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}
+  .note.sky{background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1}
+  .race{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:#fff;border:1px solid var(--line);margin-bottom:8px}
+  .race .side{width:8px;height:40px;border-radius:99px;flex:0 0 auto}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .stat .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:2px}
+  .navbtns{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .navbtns .ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer}
+  .navbtns .ib:disabled{opacity:.3}
+  .center{text-align:center}
+  .setup{min-height:100vh;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
+  .setup .box{max-width:420px;width:100%}
+  .setup h1{font-size:28px;font-weight:800;margin:8px 0 4px}
+  .setup .field>span{color:#cbd5e1}
+  .setup input,.setup select{background:#1e293b;border-color:#334155;color:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .chip{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:#fff;font-size:12px;color:var(--muted);cursor:pointer}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;
+    border-radius:99px;font-size:13px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  details summary{cursor:pointer;color:var(--muted2);font-size:12px}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+
+/* ============================ Speicher ============================ */
+var KEY = "ironman_v1";
+var DEFAULT_PROFILE = {ftp:"",runPace:"",swimCss:"",restHr:"",maxHr:"",weight:""};
+var storageOK = false;
+try { localStorage.setItem("__t","1"); storageOK = localStorage.getItem("__t")==="1"; localStorage.removeItem("__t"); }
+catch(e){ storageOK=false; }
+
+var state = {
+  settings:null, completed:{}, races:[], profile:Object.assign({},DEFAULT_PROFILE),
+  logs:{}, metrics:[], tab:"plan", weekIdx:0,
+  ui:{ method:false, legend:false, openLog:null, weekInit:false, metricType:"ftp", exp:"", msg:"" }
+};
+
+function persist(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify({
+      settings:state.settings, completed:state.completed, races:state.races,
+      profile:state.profile, logs:state.logs, metrics:state.metrics
+    }));
+  }catch(e){}
+}
+function restore(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    state.settings = d.settings || null;
+    state.completed = d.completed || {};
+    state.races = d.races || [];
+    state.profile = Object.assign({},DEFAULT_PROFILE,d.profile||{});
+    state.logs = d.logs || {};
+    state.metrics = d.metrics || [];
+  }catch(e){}
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+
+/* ============================ Datum ============================ */
+var DAY = 86400000;
+function mondayOf(d){ var x=new Date(d); x.setHours(0,0,0,0); var day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); return x; }
+function addDays(d,n){ return new Date(d.getTime()+n*DAY); }
+function toISO(d){ return new Date(d).toISOString().slice(0,10); }
+function fmt(d){ return new Date(d).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+function fmtShort(d){ return new Date(d).toLocaleDateString("de-DE",{day:"2-digit",month:"short"}); }
+
+/* ============================ Disziplinen / Phasen ============================ */
+var DISC = {
+  swim:{label:"Schwimmen",emoji:"🏊",color:"#0ea5e9",bg:"#e0f2fe"},
+  bike:{label:"Radfahren",emoji:"🚴",color:"#f59e0b",bg:"#fef3c7"},
+  run:{label:"Laufen",emoji:"🏃",color:"#10b981",bg:"#d1fae5"},
+  strength:{label:"Kraft",emoji:"💪",color:"#8b5cf6",bg:"#ede9fe"},
+  rest:{label:"Ruhe",emoji:"😴",color:"#64748b",bg:"#f1f5f9"}
+};
+var PHASE = {
+  base:{label:"Grundlage",color:"#0ea5e9"}, build:{label:"Aufbau",color:"#f59e0b"},
+  peak:{label:"Peak",color:"#ef4444"}, taper:{label:"Tapering",color:"#8b5cf6"},
+  race:{label:"Wettkampf",color:"#111827"}
+};
+var PHASE_INFO = {
+  base:"Viel lockerer Umfang bei geringer Intensität. Du legst die aerobe Basis, verbesserst Fettstoffwechsel und Technik – das Fundament für alles Weitere.",
+  build:"Jetzt kommt Intensität dazu: Schwellen-Intervalle auf dem Rad, Tempoläufe und schnellere Schwimmserien. Umfang und Härte steigen kontrolliert.",
+  peak:"Die spezifischste Phase: längste Einheiten im Renntempo, Verpflegung und Material werden getestet. Hier holst du deine Wettkampfform.",
+  taper:"Umfang deutlich runter, kurze intensive Reize bleiben. Du erholst dich, ohne die Spritzigkeit zu verlieren – ausgeruht an den Start.",
+  race:"Wettkampfwoche: nur kurze Öffner, viel Ruhe, Kopf und Körper frisch machen."
+};
+
+/* ============================ Trainingsbausteine ============================ */
+var SESSIONS = [
+  {day:1,dl:"Di",disc:"swim",key:"swim1",w:0.13,levels:["Einsteiger","Fortgeschritten","Ambitioniert"]},
+  {day:1,dl:"Di",disc:"strength",key:"str",w:0.06,levels:["Einsteiger","Fortgeschritten","Ambitioniert"]},
+  {day:2,dl:"Mi",disc:"bike",key:"bikeI",w:0.15,levels:["Einsteiger","Fortgeschritten","Ambitioniert"]},
+  {day:3,dl:"Do",disc:"run",key:"runI",w:0.13,levels:["Einsteiger","Fortgeschritten","Ambitioniert"]},
+  {day:3,dl:"Do",disc:"swim",key:"swim2",w:0.09,levels:["Fortgeschritten","Ambitioniert"]},
+  {day:4,dl:"Fr",disc:"bike",key:"reko",w:0.05,levels:["Ambitioniert"]},
+  {day:5,dl:"Sa",disc:"bike",key:"bikeL",w:0.24,levels:["Einsteiger","Fortgeschritten","Ambitioniert"]},
+  {day:6,dl:"So",disc:"run",key:"runL",w:0.20,levels:["Einsteiger","Fortgeschritten","Ambitioniert"]}
+];
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function hh(min){ return (min/60).toFixed(1).replace(".",","); }
+
+function swimMain(min,phase){
+  var warm=Math.max(6,Math.round(min*0.18)), cool=Math.max(4,Math.round(min*0.10)), main=Math.max(10,min-warm-cool);
+  if(phase==="base") return "Einschwimmen: "+warm+"min locker + 6×50m Technik-Drills (15s P)\nHauptteil: "+main+"min ruhig GA1, saubere Wasserlage & Atmung\nAusschwimmen: "+cool+"min ganz locker";
+  if(phase==="build"){ var n=clamp(Math.round(main/1.9),4,12); return "Einschwimmen: "+warm+"min + 4×50m Steigerung\nHauptserie: "+n+"×100m im Renntempo (EB), 20s P\nAusschwimmen: "+cool+"min locker"; }
+  if(phase==="peak"){ var n2=clamp(Math.round((main-15)/3.8),2,8); return "Einschwimmen: "+warm+"min lockeres Kraul\nHauptserie: 2×400m + "+n2+"×200m im Wettkampftempo, 20–30s P\nAusschwimmen: "+cool+"min locker"; }
+  return "Einschwimmen: "+warm+"min locker\n6×50m: 25m zügig / 25m locker (Tempogefühl)\nAusschwimmen: "+cool+"min locker";
+}
+function swimTech(min,phase){
+  if(phase==="peak") return "Freiwasser-Simulation: "+min+"min gleichmäßig\nalle 6–9 Züge Orientierung (Sighting) üben";
+  if(phase==="taper"||phase==="race") return min+"min ganz locker, nur Wassergefühl";
+  if(phase==="build") return Math.round(min*0.4)+"min Technik-Drills (Catch, Beinschlag)\n+ 8×50m ruhig mit Sighting, 15s P";
+  return min+"min Technik:\nKraul-Drills (einarmig, Fingerschleifen), ruhige Bahnen";
+}
+function bikeInt(min,phase){
+  var warm=Math.max(12,Math.round(min*0.22)), cool=Math.max(8,Math.round(min*0.12)), main=Math.max(12,min-warm-cool);
+  if(phase==="base"){ var n=clamp(Math.round(main/8),2,5); return "Aufwärmen: "+warm+"min einrollen GA1\nHauptteil: "+main+"min GA1 + "+n+"×5min hohe Trittfrequenz (>95 U/min)\nAusrollen: "+cool+"min locker"; }
+  if(phase==="build"){ var n2=clamp(Math.round(main/12),3,5); return "Aufwärmen: "+warm+"min + 3×1min Antritt\nHauptserie: "+n2+"×8min an der Schwelle (EB, ~100% FTP), 4min locker\nAusrollen: "+cool+"min GA1"; }
+  if(phase==="peak") return "Aufwärmen: "+warm+"min einrollen\nHauptserie: 2×20min Sweet-Spot (88–93% FTP), 5min locker\nAusrollen: "+cool+"min locker";
+  return "Aufwärmen: "+warm+"min locker\n4×1min zügige Antritte, 3min P\nAusrollen: "+cool+"min";
+}
+function bikeLong(min,phase){
+  var h=hh(min);
+  if(phase==="base") return h+"h komplett GA1 (Zone 2), runder Tritt\nTrinken/Verpflegung alle 20min üben";
+  if(phase==="build") return h+"h GA1 mit 2×20min im Renntempo (EB)\ndirekt danach: 15min Koppellauf (Brick), locker";
+  if(phase==="peak") return h+"h im Renntempo, aero-positioniert\nRace-Verpflegung testen • danach 20–30min Koppellauf";
+  return h+"h locker GA1 + 3×3min im Renntempo\nBeine wachhalten, nicht ermüden";
+}
+function runInt(min,phase){
+  var warm=Math.max(10,Math.round(min*0.22)), cool=Math.max(8,Math.round(min*0.15)), main=Math.max(10,min-warm-cool);
+  if(phase==="base") return "Warm-up: "+warm+"min locker (GA1)\n"+main+"min ruhiger Dauerlauf + 4×20s Steigerungen\nCool-down: "+cool+"min auslaufen";
+  if(phase==="build"){ var n=clamp(Math.round(main/6.5),4,8); return "Warm-up: "+warm+"min locker + Lauf-ABC\nHauptserie: "+n+"×1000m im 10k-Tempo, 2min Trabpause\nCool-down: "+cool+"min auslaufen"; }
+  if(phase==="peak"){ var t=clamp(main,20,40); return "Warm-up: "+warm+"min locker\nTempolauf: "+t+"min im Marathon-Renntempo (EB)\nCool-down: "+cool+"min locker"; }
+  return "Warm-up: "+warm+"min locker\n5×100m Steigerungen (zügig, kein Sprint)\nCool-down: "+cool+"min";
+}
+function runLong(min,phase){
+  if(phase==="base") return min+"min langer ruhiger Lauf (GA1)\ngleichmäßiger Puls, Grundlagenausdauer";
+  if(phase==="build") return min+"min langer Lauf\nletzte 20–30min progressiv zügig (GA2)";
+  if(phase==="peak") return min+"min im Renntempo-Bereich\nRace-Verpflegung & Zieltempo testen";
+  return min+"min locker (GA1)\ndeutlich verkürzt, frische Beine behalten";
+}
+function strengthDesc(min,phase){
+  if(phase==="taper"||phase==="race") return min+"min Mobilität & leichtes Core\n(Planks, Hüftmobilität) – kein Muskelkater";
+  return min+"min Kraftausdauer, 3 Runden:\nKniebeugen • Ausfallschritte • Plank • Rumpfrotation\ndazu Waden- & Schulterstabi";
+}
+function rekoDesc(min){ return min+"min ganz locker (Rekom, Zone 1)\nRad rollen oder locker schwimmen – reine Erholung"; }
+function describe(key,phase,min){
+  switch(key){
+    case "swim1": return swimMain(min,phase);
+    case "swim2": return swimTech(min,phase);
+    case "str": return strengthDesc(min,phase);
+    case "bikeI": return bikeInt(min,phase);
+    case "reko": return rekoDesc(min);
+    case "bikeL": return bikeLong(min,phase);
+    case "runL": return runLong(min,phase);
+    case "runI": return runInt(min,phase);
+    default: return "";
+  }
+}
+
+/* ============================ Zielwerte (Watt/Pace) ============================ */
+function parsePace(str){ if(!str) return null; var m=String(str).trim().match(/^(\d+):(\d{1,2})$/); if(!m) return null; return (+m[1])*60+(+m[2]); }
+function fmtPace(sec){ var s=Math.round(sec); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function targetFor(key,phase,profile){
+  var ftp=parseFloat(profile.ftp), rp=parsePace(profile.runPace), css=parsePace(profile.swimCss);
+  function W(a,b){ return Math.round(ftp*a)+"–"+Math.round(ftp*b)+" W"; }
+  function P(a,b){ return fmtPace(rp+a)+"–"+fmtPace(rp+b)+"/km"; }
+  function S(a,b){ return fmtPace(css+a)+"–"+fmtPace(css+b)+"/100m"; }
+  if(key==="bikeI"&&ftp){ if(phase==="build") return "Schwelle "+W(0.95,1.02); if(phase==="peak") return "Sweet-Spot "+W(0.88,0.93); if(phase==="base") return "GA1 "+W(0.60,0.75); }
+  if(key==="bikeL"&&ftp){ if(phase==="build"||phase==="peak") return "Renntempo "+W(0.68,0.75)+" · GA1 "+W(0.60,0.70); return "GA1 "+W(0.60,0.72); }
+  if(key==="runI"&&rp){ if(phase==="build") return "10k-Tempo "+P(-12,-2); if(phase==="peak") return "Marathon-Tempo "+P(22,35); if(phase==="base") return "locker "+P(50,80); }
+  if(key==="runL"&&rp){ if(phase==="peak") return "Renntempo "+P(22,38); if(phase==="build") return "GA1 "+P(45,75)+", Schluss "+P(15,30); return "GA1 "+P(50,85); }
+  if(key==="swim1"&&css){ if(phase==="build"||phase==="peak") return "Renntempo "+S(2,6); return "locker "+S(8,15); }
+  return null;
+}
+
+/* ============================ Plan-Logik ============================ */
+function getPhase(weeksToRace,totalWeeks){
+  var taperLen=totalWeeks>=12?2:1, peakLen=2, buildLen=Math.max(3,Math.round(totalWeeks*0.3));
+  if(weeksToRace===0) return "race";
+  if(weeksToRace<=taperLen) return "taper";
+  if(weeksToRace<=taperLen+peakLen) return "peak";
+  if(weeksToRace<=taperLen+peakLen+buildLen) return "build";
+  return "base";
+}
+function generatePlan(settings,races){
+  races=races||[];
+  var start=mondayOf(new Date()), raceMonday=mondayOf(new Date(settings.raceDate));
+  var totalWeeks=Math.round((raceMonday-start)/(7*DAY))+1;
+  if(!isFinite(totalWeeks)||totalWeeks<1) totalWeeks=1;
+  totalWeeks=Math.min(totalWeeks,60);
+  var factor={base:0.75,build:0.9,peak:1.0,taper:0.55,race:0.3};
+  var raceByWeek={}, rank={A:3,B:2,C:1};
+  races.forEach(function(r){
+    var wi=Math.round((mondayOf(new Date(r.date))-start)/(7*DAY));
+    if(wi<0||wi>=totalWeeks) return;
+    if(!raceByWeek[wi]||rank[r.prio]>rank[raceByWeek[wi].prio]) raceByWeek[wi]={prio:r.prio,name:r.name};
+  });
+  var weeks=[];
+  for(var i=0;i<totalWeeks;i++){
+    var wkMonday=addDays(start,i*7), weeksToRace=totalWeeks-1-i, phase=getPhase(weeksToRace,totalWeeks);
+    var isRecovery=phase!=="taper"&&phase!=="race"&&((i+1)%4===0)&&totalWeeks>6;
+    var ramp=0.82+0.18*(i/Math.max(1,totalWeeks-1));
+    var f=factor[phase]*((phase==="base"||phase==="build")?ramp:1);
+    if(isRecovery) f*=0.68;
+    var raceHere=raceByWeek[i], raceLast=raceByWeek[i-1], raceNext=raceByWeek[i+1];
+    var note=null, raceWeek=false, postRace=false;
+    if(raceHere&&phase!=="race"){
+      raceWeek=true;
+      if(raceHere.prio==="A"){ f*=0.5; note="Antauchen auf den Wettkampf – nur kurze, lockere Öffner."; }
+      else if(raceHere.prio==="B"){ f*=0.65; note="Wettkampfwoche – reduziertes Volumen, frische Beine für das Rennen."; }
+      else { f*=0.9; note="C-Rennen als harte Trainingseinheit – wird durchtrainiert, kaum Reduktion."; }
+    } else if(raceLast&&(raceLast.prio==="A"||raceLast.prio==="B")&&phase!=="taper"&&phase!=="race"){
+      postRace=true; f*=0.7; note="Regeneration nach dem Wettkampf – Umfänge zurückgefahren, keine harten Intervalle.";
+    } else if(raceNext&&raceNext.prio==="A"&&phase!=="taper"){
+      f*=0.85; note="Vorbereitungswoche vor A-Rennen – Intensität halten, Umfang leicht senken.";
+    }
+    var targetH=Math.max(2,settings.maxHours*f);
+    var effPhase=postRace?"base":phase;
+    var list=SESSIONS.filter(function(s){ return s.levels.indexOf(settings.level)>=0; });
+    if(phase==="race") list=list.filter(function(s){ return ["swim1","bikeL","runL"].indexOf(s.key)>=0; });
+    if(raceWeek) list=list.filter(function(s){ return s.key!=="bikeL"; });
+    var sumW=list.reduce(function(a,s){ return a+s.w; },0);
+    var items=list.map(function(s){
+      var min=Math.round(((s.w/sumW)*targetH*60)/5)*5; min=Math.max(20,min);
+      if(s.key==="str") min=Math.min(min,effPhase==="taper"?25:45);
+      if(phase==="race") min=Math.min(min,25);
+      return {id:toISO(wkMonday)+"__"+s.key,day:s.day,dl:s.dl,disc:s.disc,key:s.key,min:min,desc:describe(s.key,effPhase,min)};
+    });
+    weeks.push({index:i,monday:wkMonday,sunday:addDays(wkMonday,6),weeksToRace:weeksToRace,phase:phase,effPhase:effPhase,isRecovery:isRecovery,raceWeek:raceWeek,postRace:postRace,note:note,targetH:targetH,items:items});
+  }
+  return {weeks:weeks,totalWeeks:totalWeeks};
+}
+function currentWeekIndex(weeks){
+  var today=mondayOf(new Date()).getTime();
+  for(var i=0;i<weeks.length;i++){ if(mondayOf(weeks[i].monday).getTime()===today) return i; }
+  return 0;
+}
+function prioColor(p){ return p==="A"?"#ef4444":p==="B"?"#f59e0b":"#0ea5e9"; }
+
+/* ============================ Views ============================ */
+function viewSetup(){
+  return '<div class="setup"><div class="box">'
+    +'<div class="eyebrow">🎯 DEIN ZIEL</div>'
+    +'<h1>Ironman-Trainingsplan</h1>'
+    +'<p style="color:#94a3b8;font-size:14px;margin:0 0 18px">Gib dein Ziel ein – der Plan baut sich automatisch mit Grundlagen-, Aufbau-, Peak- und Tapering-Phasen auf.</p>'
+    + formFields(null)
+    +'<button class="btn accent" data-act="create">Plan erstellen</button>'
+    +'</div></div>';
+}
+function formFields(s){
+  s=s||{raceName:"",distanz:"Langdistanz",raceDate:defaultRaceDate(),level:"Fortgeschritten",maxHours:12,zielzeit:""};
+  function opt(v,cur){ return '<option'+(v===cur?" selected":"")+'>'+v+'</option>'; }
+  return '<label class="field"><span>Name des Wettkampfs</span><input id="f-name" value="'+esc(s.raceName)+'" placeholder="z.B. Ironman Frankfurt"></label>'
+    +'<div class="grid2">'
+    +'<label class="field"><span>Distanz</span><select id="f-dist">'+["Sprint","Olympisch","Mitteldistanz","Langdistanz"].map(function(v){return opt(v,s.distanz);}).join("")+'</select></label>'
+    +'<label class="field"><span>Wettkampfdatum</span><input id="f-date" type="date" value="'+esc(s.raceDate)+'"></label>'
+    +'</div>'
+    +'<label class="field"><span>Erfahrungslevel</span><select id="f-level">'+["Einsteiger","Fortgeschritten","Ambitioniert"].map(function(v){return opt(v,s.level);}).join("")+'</select></label>'
+    +'<div class="grid2">'
+    +'<label class="field"><span>Max. Stunden / Woche</span><input id="f-hours" type="number" min="4" max="25" value="'+esc(s.maxHours)+'"></label>'
+    +'<label class="field"><span>Zielzeit (optional)</span><input id="f-ziel" value="'+esc(s.zielzeit)+'" placeholder="z.B. sub 12:00"></label>'
+    +'</div>';
+}
+function readForm(){
+  return {
+    raceName:val("f-name"), distanz:val("f-dist"), raceDate:val("f-date"),
+    level:val("f-level"), maxHours:Number(val("f-hours"))||10, zielzeit:val("f-ziel")
+  };
+}
+function defaultRaceDate(){ return toISO(addDays(new Date(),7*24)); }
+
+function viewHeader(plan){
+  var s=state.settings, raceDate=new Date(s.raceDate);
+  var daysLeft=Math.max(0,Math.ceil((mondayOf(raceDate)-mondayOf(new Date()))/DAY));
+  var weeksLeft=Math.ceil(daysLeft/7);
+  var allIds=[]; plan.weeks.forEach(function(w){ w.items.forEach(function(it){ allIds.push(it.id); }); });
+  var done=allIds.filter(function(id){ return state.completed[id]; }).length;
+  var pct=allIds.length?Math.round(done/allIds.length*100):0;
+  return '<header class="hero">'
+    +'<div class="eyebrow">🎯 ZIELWETTKAMPF · '+esc(String(s.distanz).toUpperCase())+'</div>'
+    +'<div class="row"><div><h1>'+esc(s.raceName||"Mein Ironman")+'</h1>'
+    +'<div class="sub">'+fmt(raceDate)+(s.zielzeit?" · Ziel "+esc(s.zielzeit):"")+'</div></div>'
+    +'<div class="center"><div class="count">'+weeksLeft+'</div><div class="count-l">Wochen übrig</div></div></div>'
+    +'<div class="bar-meta"><span>Fortschritt gesamt</span><span>'+done+'/'+allIds.length+' · '+pct+'%</span></div>'
+    +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
+    +'</header>';
+}
+function viewNav(){
+  var tabs=[["plan","📅","Plan"],["werte","📈","Werte"],["races","🏆","Rennen"],["settings","⚙️","Ziel"]];
+  return '<nav>'+tabs.map(function(t){
+    return '<button data-act="tab" data-v="'+t[0]+'" class="'+(state.tab===t[0]?"active":"")+'"><span class="ic">'+t[1]+'</span>'+t[2]+'</button>';
+  }).join("")+'</nav>';
+}
+function storageBanner(){
+  if(storageOK) return '<div class="note green">Automatisch gespeichert – deine Daten bleiben in diesem Browser erhalten. Tipp: unter „Ziel" zusätzlich ein Datei-Backup machen.</div>';
+  return '<div class="note amber"><b>Automatisches Speichern ist hier nicht aktiv.</b> Öffne die App über eine gespeicherte Datei bzw. einen Link im Browser und sichere deine Daten über <button class="linkish" data-act="tab" data-v="settings" style="color:#92400e;text-decoration:underline">Ziel → Backup</button>.</div>';
+}
+
+function viewMain(plan){
+  var html=storageBanner();
+  if(state.tab==="plan") html+=viewPlan(plan);
+  else if(state.tab==="werte") html+=viewWerte(plan);
+  else if(state.tab==="races") html+=viewRaces();
+  else if(state.tab==="settings") html+=viewSettings(plan);
+  return html;
+}
+
+function viewPlan(plan){
+  var wk=plan.weeks[state.weekIdx]; if(!wk) return "";
+  var ph=PHASE[wk.phase];
+  var doneMin=wk.items.filter(function(it){ return state.completed[it.id]; }).reduce(function(a,it){ return a+it.min; },0);
+  var totalMin=wk.items.reduce(function(a,it){ return a+it.min; },0);
+  function hm(m){ return Math.floor(m/60)+":"+String(m%60).padStart(2,"0"); }
+
+  var h='<div class="navbtns">'
+    +'<button class="ib" data-act="week" data-v="-1"'+(state.weekIdx===0?" disabled":"")+'>‹</button>'
+    +'<div class="center"><div style="font-size:14px;font-weight:700">Woche '+(state.weekIdx+1)+' von '+plan.totalWeeks+'</div>'
+    +'<div class="xs muted">'+fmtShort(wk.monday)+' – '+fmtShort(wk.sunday)+'</div></div>'
+    +'<button class="ib" data-act="week" data-v="1"'+(state.weekIdx===plan.totalWeeks-1?" disabled":"")+'>›</button></div>';
+
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+    +'<span class="pill" style="background:'+ph.color+';color:#fff">'+ph.label+'</span>'
+    +(wk.isRecovery?'<span class="pill" style="background:#e2e8f0;color:#475569">Regenerationswoche</span>':"")
+    +(wk.raceWeek?'<span class="pill" style="background:#fef3c7;color:#b45309">Wettkampfwoche</span>':"")
+    +(wk.postRace?'<span class="pill" style="background:#e0f2fe;color:#0369a1">Erholung nach Rennen</span>':"")
+    +'<span style="margin-left:auto;font-size:14px;color:#475569;font-variant-numeric:tabular-nums">'+hm(doneMin)+' / '+hm(totalMin)+' h</span></div>';
+
+  h+='<p class="small muted" style="line-height:1.5;margin:0 0 8px"><b style="color:#334155">'+ph.label+':</b> '+PHASE_INFO[wk.phase]+'</p>';
+  if(wk.note) h+='<div class="note amber">'+esc(wk.note)+'</div>';
+
+  h+='<div class="acc"><button class="linkish" data-act="acc" data-v="method">'+(state.ui.method?"▾":"▸")+' So funktioniert dieser Plan</button>';
+  if(state.ui.method) h+='<div class="body">'
+    +'<p><b>Periodisierung.</b> Vier Phasen führen dich zur Bestform: <b>Grundlage</b> (viel lockerer Umfang) → <b>Aufbau</b> (Schwellen- & Tempoarbeit) → <b>Peak</b> (renntempo-spezifisch, längste Einheiten) → <b>Tapering</b> (Umfang runter, Spritzigkeit rein).</p>'
+    +'<p><b>3:1-Rhythmus.</b> Nach je drei fordernden Wochen folgt eine Regenerationswoche mit ~⅓ weniger Umfang.</p>'
+    +'<p><b>Wochenaufbau.</b> Di–Do kurze, intensivere Einheiten; am Wochenende die langen: <b>Sa</b> lange Radausfahrt, <b>So</b> langer Lauf. Zwei Ruhetage sichern Erholung.</p>'
+    +'<p><b>Koppeln (Brick).</b> In Aufbau/Peak läufst du nach der langen Radausfahrt kurz weiter – Gewöhnung an den Wechsel.</p>'
+    +'<p><b>Intensität in Zonen.</b> Trägst du unter „Werte" FTP/Pace ein, bekommst du konkrete Watt- und Tempobereiche pro Einheit.</p></div>';
+  h+='</div>';
+
+  h+='<div class="acc"><button class="linkish" data-act="acc" data-v="legend">'+(state.ui.legend?"▾":"▸")+' Zonen & Begriffe</button>';
+  if(state.ui.legend) h+='<div class="body">'
+    +'<div><b>GA1</b> – ruhig, Grundlagenausdauer (Zone 2)</div>'
+    +'<div><b>GA2</b> – zügig, Tempobereich (Zone 3)</div>'
+    +'<div><b>EB / Schwelle</b> – hart, an der Schwelle (Zone 4), ~Renntempo Rad</div>'
+    +'<div><b>SB / Antritt</b> – sehr hart, kurz (Zone 5)</div>'
+    +'<div><b>Rekom</b> – Regeneration, sehr locker (Zone 1)</div>'
+    +'<div><b>FTP</b> – Radschwellenleistung; Sweet-Spot = 88–93 %</div>'
+    +'<div><b>Brick</b> – Laufen direkt nach dem Rad</div>'
+    +'<div><b>Sighting</b> – Orientierung im Freiwasser</div></div>';
+  h+='</div>';
+  h+='<div style="height:6px"></div>';
+
+  // Wettkämpfe der Woche
+  var s=state.settings, wStart=mondayOf(wk.monday).getTime(), wEnd=addDays(mondayOf(wk.monday),7).getTime();
+  var targetHere=new Date(s.raceDate).getTime()>=wStart&&new Date(s.raceDate).getTime()<wEnd;
+  var wr=state.races.filter(function(r){ var d=new Date(r.date).getTime(); return d>=wStart&&d<wEnd; });
+  if(targetHere) h+='<div class="race" style="background:#0f172a;color:#fff;border:0"><span style="font-size:18px">🏆</span><div style="flex:1;font-weight:700;font-size:14px">'+esc(s.raceName||"Zielwettkampf")+' · '+esc(s.distanz)+'</div><div class="xs" style="color:#cbd5e1">'+fmt(s.raceDate)+'</div></div>';
+  wr.forEach(function(r){
+    h+='<div class="race" style="border:2px solid '+prioColor(r.prio)+'"><span style="font-size:18px">🚩</span><div style="flex:1"><div style="font-weight:700;font-size:14px">'+esc(r.name)+'</div><div class="xs muted">'+esc(r.type)+' · Priorität '+r.prio+'</div></div><div class="xs muted">'+fmt(r.date)+'</div></div>';
+  });
+
+  // Tage
+  var order=["Mo","Di","Mi","Do","Fr","Sa","So"], byDay={};
+  wk.items.forEach(function(it){ (byDay[it.dl]=byDay[it.dl]||[]).push(it); });
+  order.forEach(function(d){
+    var items=byDay[d]||[];
+    h+='<div class="daycol"><div class="daylab">'+d+'</div><div style="flex:1">';
+    if(items.length===0){
+      h+='<div class="sess"><div class="top"><div class="disc" style="background:#f1f5f9">😴</div><div style="flex:1;padding-top:6px"><h4 style="color:#94a3b8;font-weight:600">Ruhetag / Regeneration</h4></div></div></div>';
+    } else {
+      items.forEach(function(it){ h+=sessCard(it,wk.phase); });
+    }
+    h+='</div></div>';
+  });
+  return h;
+}
+function sessCard(it,phase){
+  var d=DISC[it.disc], done=!!state.completed[it.id], tgt=targetFor(it.key,phase,state.profile), log=state.logs[it.id];
+  var h='<div class="sess'+(done?" done":"")+'"><div class="top">'
+    +'<div class="disc" style="background:'+d.bg+'">'+d.emoji+'</div>'
+    +'<div style="flex:1;min-width:0"><h4>'+d.label+' <span class="dur">'+it.min+' min</span></h4>'
+    +'<div class="desc">'+esc(it.desc)+'</div>';
+  if(tgt) h+='<div class="tgt" style="background:'+d.bg+';color:'+d.color+'">🎯 '+esc(tgt)+'</div>';
+  if(log){
+    var parts=[]; if(log.min) parts.push(log.min+" min"); if(log.km) parts.push(log.km+" km"); if(log.rpe) parts.push("RPE "+log.rpe);
+    h+='<div class="logline">Absolviert: '+esc(parts.join(" · "))+(log.note?'<br><span style="opacity:.8">'+esc(log.note)+'</span>':"")+'</div>';
+  }
+  h+='<button class="linkish" style="margin-top:8px" data-act="openlog" data-id="'+it.id+'">✏️ '+(log?"Ergebnis bearbeiten":"Ergebnis eintragen")+'</button>';
+  if(state.ui.openLog===it.id){
+    var l=log||{min:"",km:"",rpe:"",note:""};
+    h+='<div style="margin-top:8px;border-top:1px solid #f1f5f9;padding-top:8px">'
+      +'<div class="grid3">'
+      +'<label class="field" style="margin:0"><span>Dauer (min)</span><input id="log-min" type="number" value="'+esc(l.min)+'" placeholder="'+it.min+'"></label>'
+      +'<label class="field" style="margin:0"><span>Distanz (km)</span><input id="log-km" type="number" value="'+esc(l.km)+'"></label>'
+      +'<label class="field" style="margin:0"><span>RPE 1–10</span><input id="log-rpe" type="number" value="'+esc(l.rpe)+'"></label>'
+      +'</div>'
+      +'<input id="log-note" style="margin-top:8px" placeholder="Notiz (z.B. Beine schwer, Watt-Schnitt…)" value="'+esc(l.note)+'">'
+      +'<div style="display:flex;gap:8px;margin-top:8px">'
+      +'<button class="btn" data-act="savelog" data-id="'+it.id+'">Speichern</button>'
+      +(log?'<button class="btn ghost" style="width:auto;padding:12px 14px" data-act="dellog" data-id="'+it.id+'">🗑</button>':"")
+      +'</div></div>';
+  }
+  h+='</div><div class="chk'+(done?" on":"")+'" data-act="toggle" data-id="'+it.id+'">'+(done?"✓":"")+'</div>';
+  h+='</div></div>';
+  return h;
+}
+
+function viewWerte(plan){
+  var p=state.profile;
+  function pf(id,label,ph){ return '<label class="field"><span>'+label+'</span><input data-prof="'+id+'" value="'+esc(p[id])+'" placeholder="'+ph+'"></label>'; }
+  var h='<h2 class="sec">📈 Aktuelle Leistungswerte</h2>'
+    +'<p class="xs muted" style="margin:-4px 0 10px">Damit rechnet der Plan dir bei jeder Einheit konkrete Watt- und Tempobereiche aus.</p>'
+    +'<div class="grid2">'
+    +pf("ftp","FTP – Rad (Watt)","z.B. 240")
+    +pf("runPace","Laufschwelle (min:sek/km)","z.B. 4:30")
+    +pf("swimCss","Schwimm-CSS (min:sek/100m)","z.B. 1:45")
+    +pf("weight","Gewicht (kg)","z.B. 74")
+    +pf("restHr","Ruhepuls (bpm)","z.B. 48")
+    +pf("maxHr","Max. Puls (bpm)","z.B. 188")
+    +'</div>';
+
+  h+='<h2 class="sec" style="margin-top:22px">Verlauf aufzeichnen</h2><div class="card">';
+  var types=[["ftp","FTP (Watt)"],["runPace","Laufschwelle"],["swimCss","Schwimm-CSS"],["weight","Gewicht"],["restHr","Ruhepuls"]];
+  h+='<label class="field"><span>Wert-Typ</span><select id="m-type">'+types.map(function(t){ return '<option value="'+t[0]+'"'+(state.ui.metricType===t[0]?" selected":"")+'>'+t[1]+'</option>'; }).join("")+'</select></label>';
+  var pace=(state.ui.metricType==="runPace"||state.ui.metricType==="swimCss");
+  h+='<div class="grid2"><label class="field" style="margin:0"><span>Wert</span><input id="m-val" placeholder="'+(pace?"z.B. 4:25":"Wert")+'"></label>'
+    +'<label class="field" style="margin:0"><span>Datum</span><input id="m-date" type="date" value="'+toISO(new Date())+'"></label></div>'
+    +'<button class="btn" style="margin-top:10px" data-act="addmetric">＋ Wert speichern</button></div>';
+
+  var hist=state.metrics.filter(function(m){ return m.type===state.ui.metricType; });
+  if(hist.length>=2) h+='<div class="card" style="margin-top:12px">'+miniChart(hist,pace)+'</div>';
+  if(hist.length>0){
+    h+='<div style="margin-top:10px">';
+    hist.slice().reverse().forEach(function(m){
+      h+='<div style="display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px">'
+        +'<b style="font-variant-numeric:tabular-nums">'+esc(m.value)+'</b><span class="xs muted">'+fmt(m.date)+'</span>'
+        +'<button class="linkish" style="margin-left:auto" data-act="delmetric" data-id="'+m.id+'">🗑</button></div>';
+    });
+    h+='</div>';
+  }
+
+  var doneCount=Object.keys(state.completed).filter(function(k){ return state.completed[k]; }).length;
+  var loggedMin=Object.keys(state.logs).reduce(function(a,k){ return a+(parseFloat(state.logs[k].min)||0); },0);
+  var loggedKm=Object.keys(state.logs).reduce(function(a,k){ return a+(parseFloat(state.logs[k].km)||0); },0);
+  h+='<h2 class="sec" style="margin-top:22px">Trainingsbilanz</h2><div class="grid3">'
+    +'<div class="stat"><div class="v">'+doneCount+'</div><div class="l">Einheiten erledigt</div></div>'
+    +'<div class="stat"><div class="v">'+(loggedMin/60).toFixed(1).replace(".",",")+' h</div><div class="l">protokolliert</div></div>'
+    +'<div class="stat"><div class="v">'+Math.round(loggedKm)+' km</div><div class="l">Distanz gesamt</div></div></div>';
+  return h;
+}
+function miniChart(hist,pace){
+  var vals=hist.map(function(d){ return pace?parsePace(d.value):parseFloat(d.value); }).filter(function(v){ return v!=null&&!isNaN(v); });
+  if(vals.length<2) return "";
+  var W=320,H=120,pad=28,min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),range=(max-min)||1;
+  function x(i){ return pad+(i*(W-pad-8))/(vals.length-1); }
+  function y(v){ return H-pad-((v-min)/range)*(H-pad-12); }
+  var pts=vals.map(function(v,i){ return x(i)+","+y(v); }).join(" ");
+  function fv(v){ return pace?fmtPace(v):Math.round(v); }
+  var circ=vals.map(function(v,i){ return '<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3.5" fill="#0ea5e9"/>'; }).join("");
+  return '<div class="xs muted" style="margin-bottom:4px">Verlauf</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%">'
+    +'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-8)+'" y2="'+(H-pad)+'" stroke="#e2e8f0"/>'
+    +'<polyline points="'+pts+'" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +circ
+    +'<text x="'+pad+'" y="'+(y(vals[0])-8)+'" font-size="10" fill="#64748b">'+fv(vals[0])+'</text>'
+    +'<text x="'+x(vals.length-1)+'" y="'+(y(vals[vals.length-1])-8)+'" font-size="10" fill="#0f172a" text-anchor="end" font-weight="600">'+fv(vals[vals.length-1])+'</text>'
+    +'</svg>';
+}
+
+function viewRaces(){
+  var s=state.settings;
+  var h='<div class="card" style="background:#0f172a;color:#fff;border:0;margin-bottom:18px">'
+    +'<div style="font-weight:700">🏆 '+esc(s.raceName||"Zielwettkampf")+'</div>'
+    +'<div class="small" style="color:#cbd5e1;margin-top:4px">'+esc(s.distanz)+' · '+fmt(s.raceDate)+(s.zielzeit?" · Ziel "+esc(s.zielzeit):"")+'</div></div>';
+  h+='<h2 class="sec">Vorbereitungs- & Testwettkämpfe</h2>';
+  if(state.races.length===0) h+='<p class="small muted">Noch keine Wettkämpfe. Füge z.B. einen olympischen Triathlon als B-Rennen zur Formüberprüfung hinzu – der Plan passt sich automatisch an.</p>';
+  state.races.forEach(function(r){
+    h+='<div class="race"><span class="side" style="background:'+prioColor(r.prio)+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+esc(r.name)+'</div><div class="xs muted">'+esc(r.type)+' · Priorität '+r.prio+' · '+fmt(r.date)+'</div></div><button class="linkish" data-act="delrace" data-id="'+r.id+'">🗑</button></div>';
+  });
+  h+='<div class="card" style="margin-top:14px"><div style="font-weight:700;font-size:14px;margin-bottom:10px">Wettkampf hinzufügen</div>'
+    +'<label class="field"><span>Name</span><input id="r-name" placeholder="z.B. Triathlon Roth"></label>'
+    +'<div class="grid2"><label class="field"><span>Datum</span><input id="r-date" type="date"></label>'
+    +'<label class="field"><span>Typ</span><select id="r-type">'+["Sprint","Olympisch","Mitteldistanz","Langdistanz","Radrennen","Lauf (10k)","Halbmarathon","Marathon"].map(function(v){return '<option>'+v+'</option>';}).join("")+'</select></label></div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Priorität</div>'
+    +'<div class="seg" id="r-prio" style="margin-bottom:12px">'
+    +['A','B','C'].map(function(p){ var lab={A:"Hauptziel",B:"Wichtig",C:"Training"}[p]; var on=(state.ui.prio||"B")===p; return '<button data-act="prio" data-v="'+p+'" class="'+(on?"on":"")+'" style="'+(on?"background:"+prioColor(p)+";border-color:"+prioColor(p):"")+'">'+p+' · '+lab+'</button>'; }).join("")+'</div>'
+    +'<button class="btn" data-act="addrace">＋ Hinzufügen</button></div>';
+  return h;
+}
+
+function viewSettings(plan){
+  var h='<div class="card small muted" style="margin-bottom:18px">Dein Plan umfasst aktuell <b style="color:var(--ink)">'+plan.totalWeeks+' Wochen</b>. Änderst du Datum oder Level, passt sich der komplette Plan sofort an – abgehakte Einheiten bleiben pro Kalenderwoche erhalten.</div>';
+  h+=formFields(state.settings);
+  h+='<button class="btn" data-act="update">Plan aktualisieren</button>';
+
+  h+='<div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--line)">'
+    +'<h2 class="sec">Daten & Backup</h2>'
+    +'<p class="xs muted" style="margin:-4px 0 10px">Am zuverlässigsten sicherst du deine Daten als Datei. Zum Wiederherstellen die Datei hier laden – auch nach einem Update oder auf einem anderen Gerät.</p>'
+    +'<div class="grid2" style="margin-bottom:10px">'
+    +'<button class="btn" data-act="dl">⬇ Als Datei sichern</button>'
+    +'<button class="btn ghost" data-act="up">⬆ Aus Datei laden</button>'
+    +'<input id="filein" type="file" accept="application/json,.json" class="hide">'
+    +'</div>'
+    +'<details><summary>Alternative: als Text kopieren / einfügen</summary><div style="margin-top:8px">'
+    +'<button class="btn ghost" data-act="exp">Text erzeugen & kopieren</button>'
+    +(state.ui.exp?'<textarea readonly style="margin-top:8px;height:80px;font-size:12px" onfocus="this.select()">'+esc(state.ui.exp)+'</textarea>':"")
+    +'<div style="display:flex;gap:8px;margin-top:8px"><input id="impin" placeholder="Backup-Text einfügen…"><button class="btn ghost" style="width:auto;padding:12px 14px" data-act="imp">Laden</button></div>'
+    +'</div></details>'
+    +(state.ui.msg?'<p class="xs" style="color:#059669;margin-top:8px">'+esc(state.ui.msg)+'</p>':"")
+    +'</div>';
+
+  h+='<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--line)">'
+    +'<button class="linkish" data-act="reset">Alle Daten zurücksetzen…</button></div>';
+
+  h+='<div class="card small muted" style="margin-top:22px">'
+    +'<b style="color:var(--ink)">Auf den Startbildschirm legen:</b><br>'
+    +'iPhone (Safari): Teilen ▸ „Zum Home-Bildschirm".<br>Android (Chrome): Menü ⋮ ▸ „Zum Startbildschirm hinzufügen".</div>';
+  return h;
+}
+
+/* ============================ Helpers ============================ */
+function val(id){ var el=document.getElementById(id); return el?el.value:""; }
+function toast(msg){
+  var t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); },1800);
+}
+
+/* ============================ Render ============================ */
+function render(){
+  var app=document.getElementById("app");
+  if(!state.settings){ app.innerHTML=viewSetup(); return; }
+  var plan=generatePlan(state.settings,state.races);
+  if(!state.ui.weekInit){ state.weekIdx=currentWeekIndex(plan.weeks); state.ui.weekInit=true; }
+  if(state.weekIdx>plan.totalWeeks-1) state.weekIdx=plan.totalWeeks-1;
+  if(state.weekIdx<0) state.weekIdx=0;
+  app.innerHTML=viewHeader(plan)+viewNav()+'<main>'+viewMain(plan)+'</main>';
+}
+
+/* ============================ Aktionen ============================ */
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-act]"); if(!t) return;
+  var act=t.getAttribute("data-act"), v=t.getAttribute("data-v"), id=t.getAttribute("data-id");
+
+  if(act==="create"){ state.settings=readForm(); state.ui.weekInit=false; persist(); render(); return; }
+  if(act==="update"){ state.settings=readForm(); state.ui.weekInit=false; persist(); render(); toast("Plan aktualisiert"); return; }
+  if(act==="tab"){ state.tab=v; state.ui.openLog=null; state.ui.msg=""; render(); return; }
+  if(act==="week"){ state.weekIdx+=parseInt(v,10); render(); window.scrollTo(0,0); return; }
+  if(act==="acc"){ state.ui[v]=!state.ui[v]; render(); return; }
+  if(act==="toggle"){ state.completed[id]=!state.completed[id]; persist(); render(); return; }
+  if(act==="openlog"){ state.ui.openLog=(state.ui.openLog===id?null:id); render(); return; }
+  if(act==="savelog"){
+    state.logs[id]={min:val("log-min"),km:val("log-km"),rpe:val("log-rpe"),note:val("log-note")};
+    state.ui.openLog=null; persist(); render(); toast("Gespeichert"); return;
+  }
+  if(act==="dellog"){ delete state.logs[id]; state.ui.openLog=null; persist(); render(); return; }
+  if(act==="prio"){ state.ui.prio=v; render(); return; }
+  if(act==="addrace"){
+    var name=val("r-name"), date=val("r-date");
+    if(!name||!date){ toast("Name und Datum fehlen"); return; }
+    state.races.push({id:String(Date.now()),name:name,date:date,type:val("r-type"),prio:state.ui.prio||"B"});
+    state.races.sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+    persist(); render(); toast("Wettkampf hinzugefügt"); return;
+  }
+  if(act==="delrace"){ state.races=state.races.filter(function(r){ return r.id!==id; }); persist(); render(); return; }
+  if(act==="addmetric"){
+    var value=val("m-val"); if(!value){ toast("Wert fehlt"); return; }
+    var mtype=val("m-type");
+    state.metrics.push({id:String(Date.now()),type:mtype,value:value,date:val("m-date")});
+    state.metrics.sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+    if(state.profile.hasOwnProperty(mtype)) state.profile[mtype]=value;
+    persist(); render(); toast("Wert gespeichert"); return;
+  }
+  if(act==="delmetric"){ state.metrics=state.metrics.filter(function(m){ return m.id!==id; }); persist(); render(); return; }
+  if(act==="dl"){ downloadBackup(); return; }
+  if(act==="up"){ document.getElementById("filein").click(); return; }
+  if(act==="exp"){
+    var text=JSON.stringify(exportObj());
+    state.ui.exp=text;
+    try{ navigator.clipboard&&navigator.clipboard.writeText(text); state.ui.msg="In die Zwischenablage kopiert."; }
+    catch(err){ state.ui.msg="Text markieren und kopieren."; }
+    render(); return;
+  }
+  if(act==="imp"){
+    try{ importObj(JSON.parse(val("impin").trim())); state.ui.msg="Daten geladen ✓"; persist(); render(); toast("Geladen"); }
+    catch(err){ state.ui.msg="Kein gültiger Backup-Text."; render(); }
+    return;
+  }
+  if(act==="reset"){
+    if(confirm("Wirklich ALLE Daten löschen? (Vorher besser ein Backup machen.)")){
+      try{ localStorage.removeItem(KEY); }catch(e){}
+      state.settings=null; state.completed={}; state.races=[]; state.profile=Object.assign({},DEFAULT_PROFILE);
+      state.logs={}; state.metrics=[]; state.ui.weekInit=false; render();
+    }
+    return;
+  }
+});
+
+// Metric-Typ-Wechsel (Placeholder/Chart aktualisieren)
+document.addEventListener("change",function(e){
+  if(e.target.id==="m-type"){ state.ui.metricType=e.target.value; render(); }
+  if(e.target.id==="filein"){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var reader=new FileReader();
+    reader.onload=function(){ try{ importObj(JSON.parse(String(reader.result))); state.ui.msg="Aus Datei geladen ✓"; persist(); render(); toast("Geladen"); }
+      catch(err){ state.ui.msg="Datei nicht lesbar."; render(); } };
+    reader.readAsText(f); e.target.value="";
+  }
+});
+
+// Leistungswerte live speichern (ohne Neu-Rendern → Fokus bleibt)
+document.addEventListener("input",function(e){
+  var k=e.target.getAttribute&&e.target.getAttribute("data-prof");
+  if(k){ state.profile[k]=e.target.value; persist(); }
+});
+
+function exportObj(){ return {v:1,exported:toISO(new Date()),settings:state.settings,completed:state.completed,races:state.races,profile:state.profile,logs:state.logs,metrics:state.metrics}; }
+function importObj(o){
+  if(!o||typeof o!=="object") throw new Error("bad");
+  if(o.settings) state.settings=o.settings;
+  state.completed=o.completed||{}; state.races=o.races||[];
+  state.profile=Object.assign({},DEFAULT_PROFILE,o.profile||{});
+  state.logs=o.logs||{}; state.metrics=o.metrics||[]; state.ui.weekInit=false;
+}
+function downloadBackup(){
+  try{
+    var blob=new Blob([JSON.stringify(exportObj(),null,2)],{type:"application/json"});
+    var url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download="ironman-backup-"+toISO(new Date())+".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+    toast("Backup heruntergeladen");
+  }catch(e){ state.ui.msg="Download nicht möglich – nutze die Text-Alternative."; render(); }
+}
+
+/* ============================ Start ============================ */
+restore();
+render();
+</script>
+</body>
+</html>
